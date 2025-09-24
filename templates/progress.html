@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+
+{% block title %}Progress Report - NeuroBeat{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Header -->
+    <div class="col-12 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2>Progress Report</h2>
+                <p class="text-muted">{{ patient_profile.user.first_name }} {{ patient_profile.user.last_name }} - {{ patient_profile.condition.replace('_', ' ').title() }}</p>
+            </div>
+            <div>
+                <a href="{% if user.user_type == 'patient' %}{{ url_for('patient_dashboard') }}{% else %}{{ url_for('clinician_dashboard') }}{% endif %}" class="btn btn-secondary">
+                    <i data-feather="arrow-left" class="me-2"></i>
+                    Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="col-12 mb-4">
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i data-feather="activity" class="mb-2" style="width: 32px; height: 32px;"></i>
+                        <h4>{{ sessions|length }}</h4>
+                        <p class="text-muted mb-0">Total Sessions</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i data-feather="clock" class="mb-2" style="width: 32px; height: 32px;"></i>
+                        <h4>{{ (sessions|sum(attribute='duration_seconds') // 60) or 0 }}</h4>
+                        <p class="text-muted mb-0">Total Minutes</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i data-feather="target" class="mb-2" style="width: 32px; height: 32px;"></i>
+                        <h4>{{ ((sessions|selectattr('accuracy_score')|sum(attribute='accuracy_score')) / (sessions|selectattr('accuracy_score')|list|length))|round|int if sessions|selectattr('accuracy_score')|list else 0 }}%</h4>
+                        <p class="text-muted mb-0">Avg Accuracy</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i data-feather="trending-up" class="mb-2" style="width: 32px; height: 32px;"></i>
+                        <h4>{{ sessions[-1].final_bpm|round|int if sessions and sessions[-1].final_bpm else (patient_profile.baseline_cadence|round|int if patient_profile.baseline_cadence else 'N/A') }}</h4>
+                        <p class="text-muted mb-0">Current BPM</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Charts -->
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i data-feather="trending-up" class="me-2"></i>
+                    Progress Over Time
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="progressChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Details -->
+    <div class="col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i data-feather="info" class="me-2"></i>
+                    Progress Details
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <h6 class="text-muted">Baseline Assessment</h6>
+                    <div class="row">
+                        <div class="col-6">
+                            <small>Cadence</small>
+                            <div class="h5">{{ patient_profile.baseline_cadence|round|int if patient_profile.baseline_cadence else 'N/A' }}</div>
+                        </div>
+                        <div class="col-6">
+                            <small>Target</small>
+                            <div class="h5">{{ patient_profile.target_cadence|round|int if patient_profile.target_cadence else 'N/A' }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if sessions %}
+                <div class="mb-4">
+                    <h6 class="text-muted">Recent Performance</h6>
+                    {% set recent_sessions = sessions[-5:] %}
+                    {% for session in recent_sessions %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <small>{{ session.start_time.strftime('%m/%d') }}</small>
+                        <span class="badge {% if session.accuracy_score >= 80 %}bg-success{% elif session.accuracy_score >= 60 %}bg-warning{% else %}bg-danger{% endif %}">
+                            {{ session.accuracy_score|round|int if session.accuracy_score else 'N/A' }}%
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div>
+                    <h6 class="text-muted">Progress Trend</h6>
+                    {% set first_half = sessions[:sessions|length//2] if sessions|length > 4 else sessions[:2] %}
+                    {% set second_half = sessions[sessions|length//2:] if sessions|length > 4 else sessions[2:] %}
+                    {% if first_half and second_half %}
+                        {% set first_avg = (first_half|selectattr('accuracy_score')|sum(attribute='accuracy_score')) / (first_half|selectattr('accuracy_score')|list|length) if first_half|selectattr('accuracy_score')|list else 0 %}
+                        {% set second_avg = (second_half|selectattr('accuracy_score')|sum(attribute='accuracy_score')) / (second_half|selectattr('accuracy_score')|list|length) if second_half|selectattr('accuracy_score')|list else 0 %}
+                        {% set improvement = second_avg - first_avg %}
+                        <div class="text-center">
+                            {% if improvement > 5 %}
+                                <i data-feather="trending-up" class="text-success"></i>
+                                <span class="text-success">Improving (+{{ improvement|round|int }}%)</span>
+                            {% elif improvement < -5 %}
+                                <i data-feather="trending-down" class="text-danger"></i>
+                                <span class="text-danger">Declining ({{ improvement|round|int }}%)</span>
+                            {% else %}
+                                <i data-feather="minus" class="text-warning"></i>
+                                <span class="text-warning">Stable</span>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">Need more sessions for trend analysis</p>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i data-feather="calendar" style="width: 48px; height: 48px; opacity: 0.5;"></i>
+                    <p class="text-muted">No sessions completed yet</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Session History -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i data-feather="list" class="me-2"></i>
+                    Session History
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if sessions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date & Time</th>
+                                    <th>Type</th>
+                                    <th>Duration</th>
+                                    <th>BPM Range</th>
+                                    <th>Accuracy</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for session in sessions|reverse %}
+                                <tr>
+                                    <td>{{ session.start_time.strftime('%m/%d/%Y %I:%M %p') }}</td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ session.session_type.replace('_', ' ').title() }}</span>
+                                    </td>
+                                    <td>{{ (session.duration_seconds // 60) if session.duration_seconds else 'N/A' }} min</td>
+                                    <td>
+                                        {{ session.initial_bpm|round|int }} 
+                                        {% if session.final_bpm and session.final_bpm != session.initial_bpm %}
+                                            → {{ session.final_bpm|round|int }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if session.accuracy_score %}
+                                            <span class="badge {% if session.accuracy_score >= 80 %}bg-success{% elif session.accuracy_score >= 60 %}bg-warning{% else %}bg-danger{% endif %}">
+                                                {{ session.accuracy_score|round|int }}%
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if session.notes %}
+                                            <small class="text-muted">{{ session.notes[:50] }}{% if session.notes|length > 50 %}...{% endif %}</small>
+                                        {% else %}
+                                            <small class="text-muted">No notes</small>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i data-feather="calendar" class="mb-3" style="width: 48px; height: 48px; opacity: 0.5;"></i>
+                        <p class="text-muted">No sessions recorded yet. Start your first therapy session!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script>
+// Initialize progress chart
+document.addEventListener('DOMContentLoaded', function() {
+    loadProgressData();
+    feather.replace();
+});
+
+async function loadProgressData() {
+    try {
+        const response = await fetch(`/api/progress/{{ patient_profile.id }}`);
+        if (response.ok) {
+            const data = await response.json();
+            createProgressChart(data);
+        }
+    } catch (error) {
+        console.error('Error loading progress data:', error);
+    }
+}
+
+function createProgressChart(data) {
+    const ctx = document.getElementById('progressChart').getContext('2d');
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.dates,
+            datasets: [
+                {
+                    label: 'Accuracy Score (%)',
+                    data: data.accuracy_scores,
+                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'BPM',
+                    data: data.bpm_values,
+                    borderColor: '#007bff',
+                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                    yAxisID: 'y1'
+                },
+                ...(data.baseline_cadence ? [{
+                    label: 'Baseline BPM',
+                    data: new Array(data.dates.length).fill(data.baseline_cadence),
+                    borderColor: '#6c757d',
+                    borderDash: [5, 5],
+                    pointRadius: 0,
+                    yAxisID: 'y1'
+                }] : []),
+                ...(data.target_cadence ? [{
+                    label: 'Target BPM',
+                    data: new Array(data.dates.length).fill(data.target_cadence),
+                    borderColor: '#dc3545',
+                    borderDash: [5, 5],
+                    pointRadius: 0,
+                    yAxisID: 'y1'
+                }] : [])
+            ]
+        },
+        options: {
+            responsive: true,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            scales: {
+                x: {
+                    display: true,
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                },
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'Accuracy (%)'
+                    },
+                    min: 0,
+                    max: 100
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'BPM'
+                    },
+                    grid: {
+                        drawOnChartArea: false,
+                    },
+                }
+            }
+        }
+    });
+}
+</script>
+{% endblock %}

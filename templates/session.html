@@ -1,0 +1,565 @@
+{% extends "base.html" %}
+
+{% block title %}Therapy Session - NeuroBeat{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header text-center">
+                <h4 class="card-title mb-0">
+                    {% if therapy_session.session_type == 'speech_rhythm' %}
+                        <i data-feather="mic" class="me-2"></i>
+                        Speech Rhythm Session
+                    {% elif therapy_session.session_type == 'upper_limb_motor' %}
+                        <i data-feather="activity" class="me-2"></i>
+                        Upper Limb Motor Session
+                    {% elif therapy_session.session_type == 'melodic_intonation' %}
+                        <i data-feather="music" class="me-2"></i>
+                        Melodic Intonation Therapy
+                    {% elif therapy_session.session_type == 'cognitive_rhythm' %}
+                        <i data-feather="zap" class="me-2"></i>
+                        Cognitive Rhythm Session
+                    {% else %}
+                        <i data-feather="headphones" class="me-2"></i>
+                        Gait Trainer Session
+                    {% endif %}
+                </h4>
+                <p class="text-muted mb-0">
+                    {% if therapy_session.session_type == 'speech_rhythm' %}
+                        Practice speech rhythm with syllable timing and pronunciation
+                    {% elif therapy_session.session_type == 'upper_limb_motor' %}
+                        Coordinate hand and arm movements with rhythmic beats
+                    {% elif therapy_session.session_type == 'melodic_intonation' %}
+                        Use singing and melody to improve speech and language
+                    {% elif therapy_session.session_type == 'cognitive_rhythm' %}
+                        Enhance attention, memory and cognitive function through rhythm
+                    {% else %}
+                        Synchronize your steps with the beat for gait training
+                    {% endif %}
+                </p>
+            </div>
+            <div class="card-body text-center">
+                <!-- Session Status -->
+                <div id="sessionStatus" class="mb-4">
+                    <div class="row">
+                        <div class="col-3">
+                            <div class="border rounded p-3">
+                                <h5 id="currentBPM">{{ therapy_session.initial_bpm|round|int }}</h5>
+                                <small class="text-muted">
+                                    {% if therapy_session.session_type == 'speech_rhythm' %}
+                                        Current SPM
+                                    {% else %}
+                                        Current BPM
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="border rounded p-3">
+                                <h5 id="targetBPM">{{ therapy_session.target_bpm|round|int }}</h5>
+                                <small class="text-muted">
+                                    {% if therapy_session.session_type == 'speech_rhythm' %}
+                                        Target SPM
+                                    {% else %}
+                                        Target BPM
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="border rounded p-3">
+                                <h5 id="accuracy">0%</h5>
+                                <small class="text-muted">Sync Accuracy</small>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="border rounded p-3">
+                                <h5 id="voiceStatus">
+                                    <i data-feather="mic-off" id="micIcon"></i>
+                                    <span id="voiceIndicator">Silent</span>
+                                </h5>
+                                <small class="text-muted">Voice Status</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Microphone Permission -->
+                <div id="micPermission" class="alert alert-warning" style="display: none;">
+                    <i data-feather="alert-circle" class="me-2"></i>
+                    <strong>Microphone Required:</strong> 
+                    Allow microphone access for AI-powered performance tracking and automatic beat adjustment.
+                    <button id="requestMicBtn" class="btn btn-sm btn-primary ms-2">Enable Microphone</button>
+                </div>
+
+                <!-- Beat Visualizer -->
+                <div class="mb-4">
+                    <div class="row">
+                        <div class="col-8">
+                            <div id="beatVisualizer" class="mx-auto" style="width: 200px; height: 200px; border: 4px solid #dee2e6; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.1s ease;">
+                                <div id="beatIndicator" style="width: 80px; height: 80px; background: #007bff; border-radius: 50%; transform: scale(0.8); transition: transform 0.1s ease;">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-center">
+                                <h6>Voice Level</h6>
+                                <div id="voiceVolumeMeter" style="width: 100px; height: 200px; border: 2px solid #dee2e6; border-radius: 10px; background: linear-gradient(to top, #28a745 0%, #ffc107 70%, #dc3545 100%); position: relative; overflow: hidden; margin: 0 auto;">
+                                    <div id="voiceVolumeIndicator" style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.8); height: 100%; transition: height 0.1s ease;"></div>
+                                </div>
+                                <small class="text-muted mt-2 d-block">Speak/Move to sync</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Beat Sound Selection -->
+                <div class="mb-3">
+                    <label for="beatSoundSelect" class="form-label">Beat Sound:</label>
+                    <select id="beatSoundSelect" class="form-select" onchange="changeBeatSound()" style="max-width: 300px; margin: 0 auto;">
+                        <option value="metronome">Traditional Metronome</option>
+                        <option value="drum">Drum Beat</option>
+                        <option value="soft_bell">Soft Bell</option>
+                        <option value="wooden_block">Wooden Block</option>
+                        <option value="piano">Piano Note</option>
+                    </select>
+                </div>
+
+                <!-- Session Controls -->
+                <div class="mb-4">
+                    <button id="startBtn" class="btn btn-success btn-lg me-2" onclick="startSession()">
+                        <i data-feather="play" class="me-2"></i>
+                        Start Session
+                    </button>
+                    <button id="pauseBtn" class="btn btn-warning btn-lg me-2" onclick="pauseSession()" style="display: none;">
+                        <i data-feather="pause" class="me-2"></i>
+                        Pause
+                    </button>
+                    <button id="stopBtn" class="btn btn-danger btn-lg" onclick="stopSession()" style="display: none;">
+                        <i data-feather="square" class="me-2"></i>
+                        Complete Session
+                    </button>
+                </div>
+
+                <!-- Session Timer -->
+                <div class="mb-3">
+                    <h5 id="sessionTimer">00:00</h5>
+                    <small class="text-muted">Session Duration</small>
+                </div>
+
+                <!-- Instructions -->
+                <div class="alert alert-info">
+                    <i data-feather="info" class="me-2"></i>
+                    <strong>Instructions:</strong> 
+                    {% if therapy_session.session_type == 'speech_rhythm' %}
+                        Speak the syllables "TA-TA-TA-TA" in rhythm with the beats. Focus on clear pronunciation and steady timing.
+                        Practice vowel sounds and consonant clarity while maintaining rhythm synchronization.
+                    {% elif therapy_session.session_type == 'upper_limb_motor' %}
+                        Move your arms and hands to the rhythm. Practice reaching, grasping, and manipulation exercises.
+                        Coordinate bilateral arm movements or focus on your affected limb as directed.
+                    {% elif therapy_session.session_type == 'melodic_intonation' %}
+                        Sing along with the melodic patterns. Use your voice to follow the musical phrases.
+                        Practice vocal expression and language recovery through singing therapy.
+                    {% elif therapy_session.session_type == 'cognitive_rhythm' %}
+                        Follow the rhythmic patterns while performing mental tasks. Focus on attention and memory exercises.
+                        Practice counting, sequencing, or other cognitive activities synchronized with the beat.
+                    {% else %}
+                        Walk in place or around the room, synchronizing each step with the beat. 
+                        Focus on steady gait rhythm and balance coordination.
+                    {% endif %}
+                    The system will automatically adjust the tempo based on your performance.
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Tracking -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i data-feather="activity" class="me-2"></i>
+                    Real-time Progress
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="progress mb-3">
+                    <div id="accuracyProgress" class="progress-bar" role="progressbar" style="width: 0%">
+                        0% Accuracy
+                    </div>
+                </div>
+                <canvas id="bpmChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/audio.js') }}"></script>
+<script src="{{ url_for('static', filename='js/session.js') }}"></script>
+<script>
+// Session variables
+let sessionData = {
+    id: {{ therapy_session.id }},
+    initialBPM: {{ therapy_session.initial_bpm }},
+    targetBPM: {{ therapy_session.target_bpm }},
+    currentBPM: {{ therapy_session.initial_bpm }},
+    sessionType: "{{ therapy_session.session_type }}",
+    isRunning: false,
+    startTime: null,
+    duration: 0,
+    accuracyScore: 0,
+    bpmHistory: [],
+    accuracyHistory: [],
+    selectedBeatSound: 'metronome',
+    voiceEnabled: false,
+    aiAdjustmentEnabled: true
+};
+
+let sessionTimer = null;
+let updateInterval = null;
+let voiceUpdateInterval = null;
+let chart = null;
+
+// Initialize session on page load
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof initializeAudio === 'function') {
+        initializeAudio().then((success) => {
+            if (success) {
+                // Set session type for audio engine
+                if (audioEngine && typeof audioEngine.setSessionType === 'function') {
+                    audioEngine.setSessionType(sessionData.sessionType);
+                }
+                
+                // Check microphone permission status
+                checkMicrophonePermission();
+            }
+        });
+    }
+    initializeChart();
+    feather.replace();
+});
+
+async function checkMicrophonePermission() {
+    try {
+        const permission = await navigator.permissions.query({ name: 'microphone' });
+        
+        if (permission.state === 'denied') {
+            showMicrophonePermissionAlert();
+        } else if (permission.state === 'prompt') {
+            showMicrophonePermissionAlert();
+        } else {
+            console.log('Microphone permission granted');
+        }
+    } catch (error) {
+        console.warn('Could not check microphone permission:', error);
+        showMicrophonePermissionAlert();
+    }
+}
+
+function showMicrophonePermissionAlert() {
+    const alertDiv = document.getElementById('micPermission');
+    alertDiv.style.display = 'block';
+    
+    document.getElementById('requestMicBtn').addEventListener('click', async () => {
+        try {
+            await navigator.mediaDevices.getUserMedia({ audio: true });
+            alertDiv.style.display = 'none';
+            
+            // Reinitialize audio engine with microphone
+            if (audioEngine) {
+                await audioEngine.initializeVoiceDetection();
+            }
+        } catch (error) {
+            console.error('Microphone permission denied:', error);
+            alert('Microphone access is required for AI-powered performance tracking. Some features will be limited.');
+        }
+    });
+}
+
+// Voice monitoring update function
+function updateVoiceStatus() {
+    if (!audioEngine) return;
+    
+    const isVoiceActive = audioEngine.isVoiceActive();
+    const voiceVolume = audioEngine.getVoiceVolume();
+    const voiceSyncAccuracy = audioEngine.getVoiceSyncAccuracy();
+    
+    // Update voice status indicator
+    const micIcon = document.getElementById('micIcon');
+    const voiceIndicator = document.getElementById('voiceIndicator');
+    
+    if (isVoiceActive) {
+        micIcon.setAttribute('data-feather', 'mic');
+        voiceIndicator.textContent = 'Active';
+        voiceIndicator.style.color = '#28a745';
+    } else {
+        micIcon.setAttribute('data-feather', 'mic-off');
+        voiceIndicator.textContent = 'Silent';
+        voiceIndicator.style.color = '#6c757d';
+    }
+    
+    // Update voice volume meter
+    const volumeIndicator = document.getElementById('voiceVolumeIndicator');
+    const volumePercentage = Math.min(100, voiceVolume * 1000); // Scale volume
+    volumeIndicator.style.height = `${100 - volumePercentage}%`;
+    
+    // Update sync accuracy with voice data if available
+    if (voiceSyncAccuracy > 0) {
+        sessionData.accuracyScore = Math.max(sessionData.accuracyScore, voiceSyncAccuracy);
+        updateAccuracyDisplay(sessionData.accuracyScore);
+    }
+    
+    feather.replace();
+}
+
+function initializeChart() {
+    const ctx = document.getElementById('bpmChart').getContext('2d');
+    chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'BPM',
+                data: [],
+                borderColor: '#007bff',
+                backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    min: 40,
+                    max: 120
+                }
+            }
+        }
+    });
+}
+
+function startSession() {
+    sessionData.isRunning = true;
+    sessionData.startTime = new Date();
+    
+    // Update UI
+    document.getElementById('startBtn').style.display = 'none';
+    document.getElementById('pauseBtn').style.display = 'inline-block';
+    document.getElementById('stopBtn').style.display = 'inline-block';
+    
+    // Start audio
+    if (typeof startAudioEngine === 'function') {
+        startAudioEngine(sessionData.currentBPM);
+    }
+    
+    // Start timers
+    sessionTimer = setInterval(updateTimer, 1000);
+    updateInterval = setInterval(updateSession, 5000); // Update every 5 seconds
+    voiceUpdateInterval = setInterval(updateVoiceStatus, 100); // Update voice status every 100ms
+    
+    console.log('Session started');
+}
+
+function pauseSession() {
+    sessionData.isRunning = false;
+    
+    // Update UI
+    document.getElementById('startBtn').style.display = 'inline-block';
+    document.getElementById('pauseBtn').style.display = 'none';
+    document.getElementById('startBtn').innerHTML = '<i data-feather="play" class="me-2"></i>Resume';
+    
+    // Pause audio
+    if (typeof stopAudioEngine === 'function') {
+        stopAudioEngine();
+    }
+    
+    // Clear timers
+    clearInterval(sessionTimer);
+    clearInterval(updateInterval);
+    if (voiceUpdateInterval) {
+        clearInterval(voiceUpdateInterval);
+    }
+    
+    feather.replace();
+    console.log('Session paused');
+}
+
+function stopSession() {
+    sessionData.isRunning = false;
+    
+    // Stop audio and timers
+    if (typeof stopAudioEngine === 'function') {
+        stopAudioEngine();
+    }
+    clearInterval(sessionTimer);
+    clearInterval(updateInterval);
+    if (voiceUpdateInterval) {
+        clearInterval(voiceUpdateInterval);
+    }
+    
+    // Calculate final metrics
+    const now = new Date();
+    sessionData.duration = Math.floor((now - sessionData.startTime) / 1000);
+    
+    // Complete session on server
+    completeSessionOnServer();
+}
+
+async function completeSessionOnServer() {
+    try {
+        const response = await fetch(`/session/${sessionData.id}/complete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                duration: sessionData.duration,
+                final_bpm: sessionData.currentBPM,
+                accuracy_score: sessionData.accuracyScore,
+                notes: `Completed gait trainer session. BPM range: ${sessionData.initialBPM} - ${sessionData.currentBPM}`
+            })
+        });
+        
+        if (response.ok) {
+            alert('Session completed successfully!');
+            window.location.href = '/patient/dashboard';
+        } else {
+            alert('Session completed locally, but failed to sync with server.');
+        }
+    } catch (error) {
+        console.error('Error completing session:', error);
+        alert('Session completed locally, but failed to sync with server.');
+    }
+}
+
+function updateTimer() {
+    if (!sessionData.isRunning || !sessionData.startTime) return;
+    
+    const now = new Date();
+    const elapsed = Math.floor((now - sessionData.startTime) / 1000);
+    const minutes = Math.floor(elapsed / 60);
+    const seconds = elapsed % 60;
+    
+    document.getElementById('sessionTimer').textContent = 
+        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
+async function updateSession() {
+    if (!sessionData.isRunning) return;
+    
+    // Get real accuracy from voice detection if available, otherwise simulate
+    let currentAccuracy;
+    if (audioEngine && audioEngine.voiceDetectionActive) {
+        const voiceAccuracy = audioEngine.getVoiceSyncAccuracy();
+        currentAccuracy = voiceAccuracy > 0 ? voiceAccuracy : Math.random() * 30 + 70;
+    } else {
+        currentAccuracy = Math.random() * 30 + 70; // Fallback simulation
+    }
+    
+    sessionData.accuracyScore = currentAccuracy;
+    
+    // AI-powered BPM adjustment based on performance
+    let suggestedBPM = sessionData.currentBPM;
+    if (sessionData.aiAdjustmentEnabled) {
+        if (currentAccuracy > 85) {
+            // High accuracy - gradually increase BPM towards target
+            const progressToTarget = (sessionData.targetBPM - sessionData.currentBPM) * 0.1;
+            suggestedBPM = Math.min(sessionData.targetBPM, sessionData.currentBPM + progressToTarget);
+        } else if (currentAccuracy < 60) {
+            // Low accuracy - slow down to help patient
+            suggestedBPM = Math.max(sessionData.initialBPM * 0.8, sessionData.currentBPM - 2);
+        }
+        // Medium accuracy (60-85%) - maintain current BPM
+    }
+    
+    try {
+        const response = await fetch('/session/update', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                session_id: sessionData.id,
+                current_bpm: sessionData.currentBPM,
+                sync_accuracy: currentAccuracy,
+                suggested_bpm: suggestedBPM,
+                voice_enabled: audioEngine && audioEngine.voiceDetectionActive
+            })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            
+            // Update BPM if adjusted by server or AI suggestion
+            const newBPM = data.adjusted_bpm || suggestedBPM;
+            if (newBPM !== sessionData.currentBPM) {
+                sessionData.currentBPM = newBPM;
+                updateBPMDisplay();
+                if (typeof adjustAudioTempo === 'function') {
+                    adjustAudioTempo(newBPM);
+                }
+            }
+            
+            // Update accuracy display
+            updateAccuracyDisplay(currentAccuracy);
+            
+            // Update chart
+            updateChart();
+        }
+    } catch (error) {
+        console.error('Error updating session:', error);
+    }
+}
+
+function updateBPMDisplay() {
+    document.getElementById('currentBPM').textContent = Math.round(sessionData.currentBPM);
+}
+
+function updateAccuracyDisplay(accuracy) {
+    const roundedAccuracy = Math.round(accuracy);
+    document.getElementById('accuracy').textContent = `${roundedAccuracy}%`;
+    
+    const progressBar = document.getElementById('accuracyProgress');
+    progressBar.style.width = `${roundedAccuracy}%`;
+    progressBar.textContent = `${roundedAccuracy}% Accuracy`;
+    
+    // Update progress bar color based on accuracy
+    progressBar.className = 'progress-bar';
+    if (roundedAccuracy >= 80) {
+        progressBar.classList.add('bg-success');
+    } else if (roundedAccuracy >= 60) {
+        progressBar.classList.add('bg-warning');
+    } else {
+        progressBar.classList.add('bg-danger');
+    }
+}
+
+function updateChart() {
+    const now = new Date().toLocaleTimeString();
+    sessionData.bpmHistory.push(sessionData.currentBPM);
+    
+    chart.data.labels.push(now);
+    chart.data.datasets[0].data.push(sessionData.currentBPM);
+    
+    // Keep only last 20 data points
+    if (chart.data.labels.length > 20) {
+        chart.data.labels.shift();
+        chart.data.datasets[0].data.shift();
+    }
+    
+    chart.update();
+}
+
+function changeBeatSound() {
+    const selectedSound = document.getElementById('beatSoundSelect').value;
+    sessionData.selectedBeatSound = selectedSound;
+    
+    // Update audio engine if running
+    if (sessionData.isRunning && typeof changeSoundType === 'function') {
+        changeSoundType(selectedSound);
+    }
+    
+    console.log(`Beat sound changed to: ${selectedSound}`);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,89 @@
+Project Concept: NeuroBeat (AI-Powered Music Therapy for Parkinson’s & Stroke)
+Vision
+
+A clinical-grade, AI-driven neurorehabilitation companion that uses personalized rhythmic beats, music, and waveforms to improve motor control, gait, speech, and fine motor recovery in Parkinson’s and stroke patients.
+
+The core principle: auditory-motor entrainment — synchronizing movement to rhythm to bypass damaged neural pathways.
+
+How It Works: The Clinical Loop
+
+Baseline Assessment
+
+Phone sensors or clinician input measure walking cadence, hand tapping speed, or speech rhythm.
+
+Establishes a patient’s baseline tempo.
+
+Personalized Rhythmic Prescription
+
+Clinician dashboard sets a target beat (e.g., 10% above baseline).
+
+AI generates music/metronome/soothing wave beats aligned to tempo.
+
+Patients can choose music, pure beats, or ambient waves for therapy.
+
+Therapeutic Session Delivery
+
+Beats/music delivered through headphones.
+
+Patient synchronizes steps, speech, or movements with rhythm.
+
+Modes:
+
+Walk Trainer (step-to-beat)
+
+Speech Rhythm (guided syllables)
+
+Relaxation/Balance (slow waves + breathing cues)
+
+Fine Motor Tapping (gamified drum/keyboard interface)
+
+Adaptive Feedback (Closed-Loop AI)
+
+Phone sensors track movement accuracy.
+
+System auto-adjusts BPM in real time to keep patient in sync.
+
+Progressively increases difficulty when patient improves.
+
+Progress Tracking
+
+Session logs show cadence, accuracy, and improvements.
+
+Clinicians see dashboards with trends in gait speed, speech clarity, and adherence.
+
+Patients get gamified feedback (e.g., “You improved step accuracy by 12% today!”).
+
+Key Features
+
+✅ Auto-Adjust Engine – Music tempo adapts dynamically to patient performance.
+✅ Multiple Beat Types – Metronome ticks, musical rhythms, or ambient waveforms.
+✅ Gamified Motor Exercises – Virtual drum/keyboard for hand rehab.
+✅ Patient-Friendly UI – Clean, high-contrast, voice-guided interface with big buttons.
+✅ Clinician Dashboard – Remote monitoring, therapy adjustments, and detailed reports.
+✅ TeleRehab Ready – Works at home with just a smartphone.
+
+MVP for Hackathon Demo
+
+Gait Trainer Module for Parkinson’s patients.
+
+Mock cadence input → AI-generated beat/music at prescribed tempo.
+
+Real-time BPM auto-adjust + simple graph for progress.
+
+Two interfaces:
+
+Patient view (Start button + beat + progress meter).
+
+Clinician view (Set tempo + track progress).
+
+Impact
+
+Empowers patients with accessible home therapy.
+
+Reduces clinician workload through automation.
+
+Data-driven rehab with clear measurable outcomes.
+
+Potential to reduce falls, improve walking speed, and restore fine motor skills.
+
+⚡This positions NeuroBeat not just as an app, but as a scalable digital therapeutic tool — bridging AI, music, and clinical rehab.

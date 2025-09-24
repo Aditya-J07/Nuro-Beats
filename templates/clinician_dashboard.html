@@ -1,0 +1,479 @@
+{% extends "base.html" %}
+
+{% block title %}Clinician Dashboard - NeuroBeat{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Header -->
+    <div class="col-12 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2>Clinician Dashboard</h2>
+                <p class="text-muted">Dr. {{ user.first_name }} {{ user.last_name }}</p>
+            </div>
+            <div>
+                <button type="button" class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#createPatientModal">
+                    <i data-feather="user-plus" class="me-2"></i>
+                    Create Patient
+                </button>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#assignPatientModal">
+                    <i data-feather="users" class="me-2"></i>
+                    Assign Existing Patient
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="col-12 mb-4">
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i data-feather="users" class="mb-2" style="width: 32px; height: 32px;"></i>
+                        <h4>{{ patients|length }}</h4>
+                        <p class="text-muted mb-0">Active Patients</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i data-feather="activity" class="mb-2" style="width: 32px; height: 32px;"></i>
+                        <h4>
+                            {% set total_sessions = 0 %}
+                            {% for patient in patients %}
+                                {% set total_sessions = total_sessions + patient.sessions|length %}
+                            {% endfor %}
+                            {{ total_sessions }}
+                        </h4>
+                        <p class="text-muted mb-0">Total Sessions</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i data-feather="user-check" class="mb-2" style="width: 32px; height: 32px;"></i>
+                        <h4>{{ unassigned_patients|length }}</h4>
+                        <p class="text-muted mb-0">Unassigned</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i data-feather="trending-up" class="mb-2" style="width: 32px; height: 32px;"></i>
+                        <h4>{{ clinician_profile.specialization or 'General' }}</h4>
+                        <p class="text-muted mb-0">Specialization</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Patient Management -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i data-feather="users" class="me-2"></i>
+                    Patient Management
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if patients %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>Condition</th>
+                                    <th>Baseline Assessments</th>
+                                    <th>Last Session</th>
+                                    <th>Progress</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for patient in patients %}
+                                <tr>
+                                    <td>
+                                        <div>
+                                            <strong>{{ patient.user.first_name }} {{ patient.user.last_name }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ patient.user.email }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">
+                                            {{ patient.condition.replace('_', ' ').title() }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if patient.assessments %}
+                                            {% for assessment in patient.assessments %}
+                                                <div class="mb-1">
+                                                    <small class="text-muted">{{ assessment.assessment_type.title() }}:</small>
+                                                    <strong>{{ assessment.measured_value|round(1) }}</strong>
+                                                    {% if assessment.assessment_type == 'gait' %}
+                                                        steps/min
+                                                    {% elif assessment.assessment_type == 'tapping' %}
+                                                        taps/min
+                                                    {% elif assessment.assessment_type == 'speech' %}
+                                                        syllables/min
+                                                    {% elif assessment.assessment_type == 'balance' %}
+                                                        /56
+                                                    {% elif assessment.assessment_type == 'coordination' %}
+                                                        sec
+                                                    {% elif assessment.assessment_type == 'cognitive' %}
+                                                        /30
+                                                    {% endif %}
+                                                </div>
+                                            {% endfor %}
+                                        {% else %}
+                                            <span class="text-muted">No assessments</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if patient.sessions %}
+                                            {% set last_session = patient.sessions|selectattr('completed', 'equalto', True)|list|last %}
+                                            {% if last_session %}
+                                                {{ last_session.start_time.strftime('%m/%d/%Y') }}
+                                            {% else %}
+                                                No completed sessions
+                                            {% endif %}
+                                        {% else %}
+                                            No sessions
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if patient.sessions %}
+                                            {% set completed_sessions = patient.sessions|selectattr('completed', 'equalto', True)|list %}
+                                            {% if completed_sessions %}
+                                                {% set avg_acc = (completed_sessions|sum(attribute='accuracy_score'))/completed_sessions|length %}
+                                                <span class="badge {% if avg_acc >= 80 %}bg-success{% elif avg_acc >= 60 %}bg-warning{% else %}bg-danger{% endif %}">
+                                                    {{ avg_acc|round|int }}%
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">N/A</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="badge bg-secondary">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{{ url_for('progress_view', patient_id=patient.id) }}" class="btn btn-outline-primary" title="View Progress">
+                                                <i data-feather="bar-chart-2"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-outline-secondary" onclick="setBaseline({{ patient.id }})" title="Set Baseline">
+                                                <i data-feather="settings"></i>
+                                            </button>
+                                            <a href="{{ url_for('patient_credentials', patient_id=patient.id) }}" class="btn btn-outline-warning btn-sm" title="View Credentials">
+                                                <i data-feather="key"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i data-feather="users" class="mb-3" style="width: 48px; height: 48px; opacity: 0.5;"></i>
+                        <p class="text-muted">No patients assigned yet.</p>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#assignPatientModal">
+                            <i data-feather="user-plus" class="me-2"></i>
+                            Assign Your First Patient
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Patient Modal -->
+<div class="modal fade" id="createPatientModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i data-feather="user-plus" class="me-2"></i>
+                    Create New Patient
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('create_patient') }}">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="first_name" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="last_name" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Primary Condition</label>
+                            <div class="d-flex gap-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="condition" id="patient_condition_parkinsons" value="parkinsons" required onchange="toggleStrokeFields()">
+                                    <label class="form-check-label" for="patient_condition_parkinsons">
+                                        Parkinson's Disease
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="condition" id="patient_condition_stroke" value="stroke" required onchange="toggleStrokeFields()">
+                                    <label class="form-check-label" for="patient_condition_stroke">
+                                        Stroke
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Stroke-specific fields -->
+                    <div id="strokeFields" style="display: none;" class="mt-4">
+                        <h6 class="text-muted mb-3">Stroke-Specific Information</h6>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Affected Side</label>
+                                <div class="d-flex flex-column gap-1">
+                                    <div class="form-check form-check-sm">
+                                        <input class="form-check-input" type="radio" name="stroke_affected_side" id="affected_left" value="left">
+                                        <label class="form-check-label" for="affected_left">Left</label>
+                                    </div>
+                                    <div class="form-check form-check-sm">
+                                        <input class="form-check-input" type="radio" name="stroke_affected_side" id="affected_right" value="right">
+                                        <label class="form-check-label" for="affected_right">Right</label>
+                                    </div>
+                                    <div class="form-check form-check-sm">
+                                        <input class="form-check-input" type="radio" name="stroke_affected_side" id="affected_bilateral" value="bilateral">
+                                        <label class="form-check-label" for="affected_bilateral">Bilateral</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Stroke Severity</label>
+                                <div class="d-flex flex-column gap-1">
+                                    <div class="form-check form-check-sm">
+                                        <input class="form-check-input" type="radio" name="stroke_severity" id="severity_mild" value="mild">
+                                        <label class="form-check-label" for="severity_mild">Mild</label>
+                                    </div>
+                                    <div class="form-check form-check-sm">
+                                        <input class="form-check-input" type="radio" name="stroke_severity" id="severity_moderate" value="moderate">
+                                        <label class="form-check-label" for="severity_moderate">Moderate</label>
+                                    </div>
+                                    <div class="form-check form-check-sm">
+                                        <input class="form-check-input" type="radio" name="stroke_severity" id="severity_severe" value="severe">
+                                        <label class="form-check-label" for="severity_severe">Severe</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Aphasia Type</label>
+                                <div class="d-flex flex-column gap-1">
+                                    <div class="form-check form-check-sm">
+                                        <input class="form-check-input" type="radio" name="aphasia_type" id="aphasia_none" value="none">
+                                        <label class="form-check-label" for="aphasia_none">None</label>
+                                    </div>
+                                    <div class="form-check form-check-sm">
+                                        <input class="form-check-input" type="radio" name="aphasia_type" id="aphasia_broca" value="broca">
+                                        <label class="form-check-label" for="aphasia_broca">Broca's</label>
+                                    </div>
+                                    <div class="form-check form-check-sm">
+                                        <input class="form-check-input" type="radio" name="aphasia_type" id="aphasia_wernicke" value="wernicke">
+                                        <label class="form-check-label" for="aphasia_wernicke">Wernicke's</label>
+                                    </div>
+                                    <div class="form-check form-check-sm">
+                                        <input class="form-check-input" type="radio" name="aphasia_type" id="aphasia_global" value="global">
+                                        <label class="form-check-label" for="aphasia_global">Global</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Dysarthria Severity</label>
+                                <div class="d-flex flex-column gap-1">
+                                    <div class="form-check form-check-sm">
+                                        <input class="form-check-input" type="radio" name="dysarthria_severity" id="dysarthria_none" value="none">
+                                        <label class="form-check-label" for="dysarthria_none">None</label>
+                                    </div>
+                                    <div class="form-check form-check-sm">
+                                        <input class="form-check-input" type="radio" name="dysarthria_severity" id="dysarthria_mild" value="mild">
+                                        <label class="form-check-label" for="dysarthria_mild">Mild</label>
+                                    </div>
+                                    <div class="form-check form-check-sm">
+                                        <input class="form-check-input" type="radio" name="dysarthria_severity" id="dysarthria_moderate" value="moderate">
+                                        <label class="form-check-label" for="dysarthria_moderate">Moderate</label>
+                                    </div>
+                                    <div class="form-check form-check-sm">
+                                        <input class="form-check-input" type="radio" name="dysarthria_severity" id="dysarthria_severe" value="severe">
+                                        <label class="form-check-label" for="dysarthria_severe">Severe</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Motor Impairment</label>
+                                <div class="d-flex flex-column gap-1">
+                                    <div class="form-check form-check-sm">
+                                        <input class="form-check-input" type="radio" name="motor_impairment_level" id="motor_mild" value="mild">
+                                        <label class="form-check-label" for="motor_mild">Mild</label>
+                                    </div>
+                                    <div class="form-check form-check-sm">
+                                        <input class="form-check-input" type="radio" name="motor_impairment_level" id="motor_moderate" value="moderate">
+                                        <label class="form-check-label" for="motor_moderate">Moderate</label>
+                                    </div>
+                                    <div class="form-check form-check-sm">
+                                        <input class="form-check-input" type="radio" name="motor_impairment_level" id="motor_severe" value="severe">
+                                        <label class="form-check-label" for="motor_severe">Severe</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Cognitive Status</label>
+                                <div class="d-flex flex-column gap-1">
+                                    <div class="form-check form-check-sm">
+                                        <input class="form-check-input" type="radio" name="cognitive_status" id="cognitive_normal" value="normal">
+                                        <label class="form-check-label" for="cognitive_normal">Normal</label>
+                                    </div>
+                                    <div class="form-check form-check-sm">
+                                        <input class="form-check-input" type="radio" name="cognitive_status" id="cognitive_mild" value="mild_impairment">
+                                        <label class="form-check-label" for="cognitive_mild">Mild Impairment</label>
+                                    </div>
+                                    <div class="form-check form-check-sm">
+                                        <input class="form-check-input" type="radio" name="cognitive_status" id="cognitive_moderate" value="moderate_impairment">
+                                        <label class="form-check-label" for="cognitive_moderate">Moderate Impairment</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Create Patient</button>
+                </div>
+                <div class="modal-body border-top">
+                    <div class="alert alert-info">
+                        <i data-feather="info" class="me-2"></i>
+                        <strong>Important:</strong> After creating the patient account, please share the login credentials with your patient so they can access their dashboard and begin therapy sessions.
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Assign Patient Modal -->
+<div class="modal fade" id="assignPatientModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i data-feather="user-plus" class="me-2"></i>
+                    Assign Patient
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                {% if unassigned_patients %}
+                    <p>Select a patient to assign to your care:</p>
+                    <div class="list-group">
+                        {% for patient in unassigned_patients %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ patient.user.first_name }} {{ patient.user.last_name }}</strong>
+                                <br>
+                                <small class="text-muted">{{ patient.user.email }}</small>
+                                <br>
+                                <span class="badge bg-info">{{ patient.condition.replace('_', ' ').title() }}</span>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-primary" onclick="assignPatient({{ patient.id }})">
+                                Assign
+                            </button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-3">
+                        <i data-feather="users" class="mb-2" style="width: 32px; height: 32px; opacity: 0.5;"></i>
+                        <p class="text-muted">No unassigned patients available.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function assignPatient(patientId) {
+    try {
+        const response = await fetch('/assign_patient', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                patient_id: patientId
+            })
+        });
+
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert('Failed to assign patient. Please try again.');
+        }
+    } catch (error) {
+        console.error('Error assigning patient:', error);
+        alert('Failed to assign patient. Please try again.');
+    }
+}
+
+function setBaseline(patientId) {
+    window.location.href = `/baseline/assessment?patient_id=${patientId}`;
+}
+
+function toggleStrokeFields() {
+    const strokeFields = document.getElementById('strokeFields');
+    const conditionRadios = document.querySelectorAll('input[name="condition"]');
+    let selectedCondition = null;
+
+    conditionRadios.forEach(radio => {
+        if (radio.checked) {
+            selectedCondition = radio.value;
+        }
+    });
+
+    if (strokeFields) {
+        if (selectedCondition === 'stroke') {
+            strokeFields.style.display = 'block';
+            // Make stroke fields required
+            strokeFields.querySelectorAll('input[type="radio"]').forEach(radio => {
+                radio.required = true;
+            });
+        } else {
+            strokeFields.style.display = 'none';
+            // Remove required attribute from stroke fields
+            strokeFields.querySelectorAll('input[type="radio"]').forEach(radio => {
+                radio.required = false;
+            });
+        }
+    }
+}
+</script>
+{% endblock %}

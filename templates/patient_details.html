@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}{{ patient_profile.user.first_name }} {{ patient_profile.user.last_name }} - Patient Details{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Header -->
+    <div class="col-12 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2>{{ patient_profile.user.first_name }} {{ patient_profile.user.last_name }}</h2>
+                <p class="text-muted">Patient Details & Progress Tracking</p>
+            </div>
+            <div>
+                <a href="{{ url_for('clinician_dashboard') }}" class="btn btn-secondary me-2">
+                    <i data-feather="arrow-left" class="me-2"></i>
+                    Back to Dashboard
+                </a>
+                <a href="{{ url_for('progress_view', patient_id=patient_profile.id) }}" class="btn btn-primary">
+                    <i data-feather="bar-chart-2" class="me-2"></i>
+                    View Progress Charts
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Patient Information -->
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i data-feather="user" class="me-2"></i>
+                    Patient Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Email:</strong>
+                    <br>{{ patient_profile.user.email }}
+                </div>
+                <div class="mb-3">
+                    <strong>Username:</strong>
+                    <br>{{ patient_profile.user.username }}
+                </div>
+                <div class="mb-3">
+                    <strong>Condition:</strong>
+                    <br><span class="badge bg-info">{{ patient_profile.condition.replace('_', ' ').title() }}</span>
+                </div>
+                <div class="mb-3">
+                    <strong>Member Since:</strong>
+                    <br>{{ patient_profile.user.created_at.strftime('%B %d, %Y') }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Overview -->
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i data-feather="activity" class="me-2"></i>
+                    Progress Overview
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h4 class="text-primary">{{ total_sessions }}</h4>
+                            <p class="text-muted mb-0">Total Sessions</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h4 class="text-success">{{ avg_accuracy }}%</h4>
+                            <p class="text-muted mb-0">Avg Accuracy</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h4 class="text-info">{{ patient_profile.baseline_cadence|round|int if patient_profile.baseline_cadence else 'N/A' }}</h4>
+                            <p class="text-muted mb-0">Baseline Cadence</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h4 class="text-warning">{{ patient_profile.target_cadence|round|int if patient_profile.target_cadence else 'N/A' }}</h4>
+                            <p class="text-muted mb-0">Target Cadence</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Sessions -->
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i data-feather="clock" class="me-2"></i>
+                    Recent Sessions
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if recent_sessions %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Duration</th>
+                                    <th>Accuracy</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for session in recent_sessions %}
+                                <tr>
+                                    <td>{{ session.start_time.strftime('%m/%d/%Y') }}</td>
+                                    <td>{{ session.session_type.replace('_', ' ').title() }}</td>
+                                    <td>
+                                        {% if session.duration_seconds %}
+                                            {{ (session.duration_seconds // 60) }}m {{ (session.duration_seconds % 60) }}s
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if session.accuracy_score %}
+                                            <span class="badge {% if session.accuracy_score >= 80 %}bg-success{% elif session.accuracy_score >= 60 %}bg-warning{% else %}bg-danger{% endif %}">
+                                                {{ session.accuracy_score|round|int }}%
+                                            </span>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if session.completed %}
+                                            <span class="badge bg-success">Completed</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">In Progress</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-3">
+                        <i data-feather="activity" class="mb-2" style="width: 32px; height: 32px; opacity: 0.5;"></i>
+                        <p class="text-muted">No sessions recorded yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Baseline Assessments -->
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i data-feather="clipboard" class="me-2"></i>
+                    Baseline Assessments
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if assessments %}
+                    {% for assessment in assessments %}
+                    <div class="border-bottom py-2">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <span class="badge bg-primary">{{ assessment.assessment_type.title() }}</span>
+                                <strong class="ms-2">{{ assessment.measured_value|round(1) }} 
+                                    {% if assessment.assessment_type == 'gait' %}steps/min
+                                    {% elif assessment.assessment_type == 'tapping' %}taps/min
+                                    {% elif assessment.assessment_type == 'speech' %}syllables/min
+                                    {% elif assessment.assessment_type == 'balance' %}/56 (Berg Scale)
+                                    {% elif assessment.assessment_type == 'coordination' %}sec per rep
+                                    {% elif assessment.assessment_type == 'cognitive' %}/30 (MoCA)
+                                    {% endif %}
+                                </strong>
+                            </div>
+                            <small class="text-muted">{{ assessment.created_at.strftime('%m/%d/%Y') }}</small>
+                        </div>
+                        {% if assessment.notes %}
+                        <div class="mt-2">
+                            <small class="text-muted">{{ assessment.notes }}</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-3">
+                        <i data-feather="clipboard" class="mb-2" style="width: 32px; height: 32px; opacity: 0.5;"></i>
+                        <p class="text-muted">No assessments recorded.</p>
+                        <a href="{{ url_for('baseline_assessment') }}?patient_id={{ patient_profile.id }}" class="btn btn-sm btn-primary">
+                            Add Assessment
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

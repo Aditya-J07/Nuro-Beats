@@ -1,0 +1,461 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Dashboard - NeuroBeat{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Welcome Section -->
+    <div class="col-12 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2>Welcome back, {{ user.first_name }}!</h2>
+                <p class="text-muted">{{ patient_profile.condition.replace('_', ' ').title() }} Recovery Program</p>
+            </div>
+            <div>
+                {% if patient_profile.condition == 'stroke' %}
+                <button type="button" class="btn btn-primary" onclick="startStrokeSession('gait_trainer')">
+                    <i data-feather="play" class="me-2"></i>
+                    Start Gait Trainer
+                </button>
+                {% else %}
+                <button type="button" class="btn btn-primary" onclick="startSession('gait_trainer')">
+                    <i data-feather="play" class="me-2"></i>
+                    Start Gait Trainer
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="col-12 mb-4">
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i data-feather="activity" class="mb-2" style="width: 32px; height: 32px;"></i>
+                        <h4>{{ total_sessions }}</h4>
+                        <p class="text-muted mb-0">Total Sessions</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i data-feather="target" class="mb-2" style="width: 32px; height: 32px;"></i>
+                        <h4>{{ avg_accuracy }}%</h4>
+                        <p class="text-muted mb-0">Avg Accuracy</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i data-feather="trending-up" class="mb-2" style="width: 32px; height: 32px;"></i>
+                        <h4>{{ patient_profile.baseline_cadence or 'N/A' }}</h4>
+                        <p class="text-muted mb-0">Baseline BPM</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i data-feather="flag" class="mb-2" style="width: 32px; height: 32px;"></i>
+                        <h4>{{ patient_profile.target_cadence or 'N/A' }}</h4>
+                        <p class="text-muted mb-0">Target BPM</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-lg-8">
+        <!-- Therapy Modules -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i data-feather="play-circle" class="me-2"></i>
+                    {% if patient_profile.condition == 'stroke' %}Stroke Rehabilitation Modules{% else %}Therapy Modules{% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if patient_profile.condition == 'stroke' %}
+                <!-- Stroke-specific therapy modules -->
+                <div class="row g-3">
+                    <!-- Gait Training (RAS) -->
+                    <div class="col-md-6">
+                        <div class="card border-primary h-100">
+                            <div class="card-body text-center">
+                                <i data-feather="activity" class="mb-3" style="width: 48px; height: 48px; color: #0d6efd;"></i>
+                                <h5>Gait Training (RAS)</h5>
+                                <p class="text-muted">Rhythmic Auditory Stimulation for walking recovery</p>
+                                <small class="text-info">Recommended BPM: 40-60</small>
+                                <br>
+                                <button type="button" class="btn btn-primary mt-2" onclick="startStrokeSession('gait_trainer')">
+                                    Start Session
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upper Limb Motor -->
+                    <div class="col-md-6">
+                        <div class="card border-warning h-100">
+                            <div class="card-body text-center">
+                                <i data-feather="move" class="mb-3" style="width: 48px; height: 48px; color: #ffc107;"></i>
+                                <h5>Upper Limb Training</h5>
+                                <p class="text-muted">Percussion exercises for arm coordination</p>
+                                <small class="text-warning">Focus: {{ patient_profile.stroke_affected_side or 'Both' }} side</small>
+                                <br>
+                                <button type="button" class="btn btn-warning mt-2" onclick="startStrokeSession('upper_limb_motor')">
+                                    Start Session
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Melodic Intonation Therapy -->
+                    <div class="col-md-6">
+                        <div class="card border-success h-100">
+                            <div class="card-body text-center">
+                                <i data-feather="music" class="mb-3" style="width: 48px; height: 48px; color: #198754;"></i>
+                                <h5>Melodic Intonation</h5>
+                                <p class="text-muted">Singing therapy for speech recovery</p>
+                                <small class="text-success">For: {{ patient_profile.aphasia_type or 'Speech' }} improvement</small>
+                                <br>
+                                <button type="button" class="btn btn-success mt-2" onclick="startStrokeSession('melodic_intonation')">
+                                    Start Session
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Speech Rhythm -->
+                    <div class="col-md-6">
+                        <div class="card border-info h-100">
+                            <div class="card-body text-center">
+                                <i data-feather="mic" class="mb-3" style="width: 48px; height: 48px; color: #0dcaf0;"></i>
+                                <h5>Speech Rhythm</h5>
+                                <p class="text-muted">Syllable timing and articulation practice</p>
+                                <small class="text-info">Recommended BPM: 50-90</small>
+                                <br>
+                                <button type="button" class="btn btn-info mt-2" onclick="startStrokeSession('speech_rhythm')">
+                                    Start Session
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cognitive Training -->
+                    <div class="col-lg-12">
+                        <div class="card border-secondary h-100">
+                            <div class="card-body text-center">
+                                <i data-feather="cpu" class="mb-3" style="width: 48px; height: 48px; color: #6c757d;"></i>
+                                <h5>Cognitive Rhythm Training</h5>
+                                <p class="text-muted">Attention, memory, and sequencing exercises with music</p>
+                                <small class="text-secondary">Status: {{ patient_profile.cognitive_status or 'Normal' }}</small>
+                                <br>
+                                <button type="button" class="btn btn-secondary mt-2" onclick="startStrokeSession('cognitive_rhythm')">
+                                    Start Session
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <!-- Standard therapy modules for Parkinson's -->
+                <div class="row g-3">
+                    <!-- Gait Trainer -->
+                    <div class="col-md-6">
+                        <div class="card border-primary h-100">
+                            <div class="card-body text-center">
+                                <i data-feather="activity" class="mb-3" style="width: 48px; height: 48px; color: #0d6efd;"></i>
+                                <h5>Gait Trainer</h5>
+                                <p class="text-muted">Improve walking rhythm and balance with musical cues</p>
+                                <button type="button" class="btn btn-primary" onclick="startSession('gait_trainer')">
+                                    Start Session
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Speech Rhythm -->
+                    <div class="col-md-6">
+                        <div class="card border-success h-100">
+                            <div class="card-body text-center">
+                                <i data-feather="mic" class="mb-3" style="width: 48px; height: 48px; color: #198754;"></i>
+                                <h5>Speech Rhythm</h5>
+                                <p class="text-muted">Practice speech timing and articulation</p>
+                                <button type="button" class="btn btn-success" onclick="startSession('speech_rhythm')">
+                                    Start Session
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Finger Tapping -->
+                    <div class="col-md-6">
+                        <div class="card border-warning h-100">
+                            <div class="card-body text-center">
+                                <i data-feather="move" class="mb-3" style="width: 48px; height: 48px; color: #ffc107;"></i>
+                                <h5>Finger Tapping</h5>
+                                <p class="text-muted">Enhance fine motor control and coordination</p>
+                                <button type="button" class="btn btn-warning" onclick="startSession('finger_tapping')">
+                                    Start Session
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Balance Training -->
+                    <div class="col-md-6">
+                        <div class="card border-info h-100">
+                            <div class="card-body text-center">
+                                <i data-feather="target" class="mb-3" style="width: 48px; height: 48px; color: #0dcaf0;"></i>
+                                <h5>Balance Training</h5>
+                                <p class="text-muted">Improve stability with rhythmic exercises</p>
+                                <button type="button" class="btn btn-info" onclick="startSession('balance_training')">
+                                    Start Session
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Sessions -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i data-feather="clock" class="me-2"></i>
+                    Recent Sessions
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if recent_sessions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Duration</th>
+                                    <th>Accuracy</th>
+                                    <th>BPM Range</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for session in recent_sessions %}
+                                <tr>
+                                    <td>{{ session.start_time.strftime('%m/%d/%Y %I:%M %p') }}</td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ session.session_type.replace('_', ' ').title() }}</span>
+                                    </td>
+                                    <td>{{ (session.duration_seconds // 60) if session.duration_seconds else 'N/A' }} min</td>
+                                    <td>
+                                        {% if session.accuracy_score %}
+                                            <span class="badge {% if session.accuracy_score >= 80 %}bg-success{% elif session.accuracy_score >= 60 %}bg-warning{% else %}bg-danger{% endif %}">
+                                                {{ session.accuracy_score|round|int }}%
+                                            </span>
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ session.initial_bpm|round|int }} - {{ session.final_bpm|round|int if session.final_bpm else session.initial_bpm|round|int }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i data-feather="calendar" class="mb-3" style="width: 48px; height: 48px; opacity: 0.5;"></i>
+                        <p class="text-muted">No sessions completed yet. Start your first therapy session!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Quick Actions -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i data-feather="zap" class="me-2"></i>
+                    Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+
+                    <a href="{{ url_for('progress_view', patient_id=patient_profile.id) }}" class="btn btn-outline-info">
+                        <i data-feather="bar-chart-2" class="me-2"></i>
+                        View Progress
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Summary -->
+        {% if patient_profile.baseline_cadence and patient_profile.target_cadence %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i data-feather="trending-up" class="me-2"></i>
+                    Progress Summary
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Cadence Progress</label>
+                    <div class="progress">
+                        <div class="progress-bar" role="progressbar" 
+                             style="width: {{ ((avg_accuracy or 0) / 100 * 75)|round|int }}%">
+                            {{ ((avg_accuracy or 0) / 100 * 75)|round|int }}%
+                        </div>
+                    </div>
+                    <small class="text-muted">Based on session accuracy</small>
+                </div>
+
+                <div class="row text-center">
+                    <div class="col-6">
+                        <small class="text-muted">Current</small>
+                        <div class="h5">{{ patient_profile.baseline_cadence|round|int }}</div>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted">Target</small>
+                        <div class="h5">{{ patient_profile.target_cadence|round|int }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+async function startSession(sessionType) {
+    try {
+        // Use baseline BPM if available, otherwise default values
+        let initialBpm = 60;
+        let targetBpm = 70;
+        
+        {% if patient_profile.baseline_cadence %}
+            initialBpm = {{ patient_profile.baseline_cadence|round|int }};
+            targetBpm = {{ patient_profile.target_cadence|round|int if patient_profile.target_cadence else (patient_profile.baseline_cadence * 1.1)|round|int }};
+        {% endif %}
+
+        const response = await fetch('/session/start', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                session_type: sessionType,
+                initial_bpm: initialBpm,
+                target_bpm: targetBpm
+            })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            window.location.href = `/session/${data.session_id}`;
+        } else {
+            alert('Failed to start session. Please try again.');
+        }
+    } catch (error) {
+        console.error('Error starting session:', error);
+        alert('Failed to start session. Please try again.');
+    }
+}
+
+async function startStrokeSession(sessionType) {
+    try {
+        // Use baseline BPM if available, otherwise use optimal defaults
+        let defaultBpm = 60;
+        let targetBpm = 65;
+        let affectedLimb = null;
+        let cognitiveLevel = 1;
+
+        // Check if we have baseline assessments to use
+        {% if patient_profile.baseline_cadence %}
+            if (sessionType === 'gait_trainer') {
+                defaultBpm = {{ patient_profile.baseline_cadence|round|int }};
+                targetBpm = {{ patient_profile.target_cadence|round|int if patient_profile.target_cadence else (patient_profile.baseline_cadence * 1.05)|round|int }};
+            }
+        {% endif %}
+        
+        {% if patient_profile.baseline_tapping_speed %}
+            if (sessionType === 'upper_limb_motor') {
+                defaultBpm = {{ (patient_profile.baseline_tapping_speed / 4)|round|int }}; // Convert taps/min to BPM
+                targetBpm = defaultBpm + 5;
+            }
+        {% endif %}
+        
+        {% if patient_profile.baseline_speech_rate %}
+            if (sessionType === 'melodic_intonation' || sessionType === 'speech_rhythm') {
+                defaultBpm = {{ (patient_profile.baseline_speech_rate / 3)|round|int }}; // Convert syllables/min to BPM
+                targetBpm = defaultBpm + 5;
+            }
+        {% endif %}
+
+        // Set optimal BPM based on session type if no baseline available
+        if (!defaultBpm || defaultBpm === 60) {
+            if (sessionType === 'gait_trainer') {
+                defaultBpm = 50;
+            } else if (sessionType === 'upper_limb_motor') {
+                defaultBpm = 55;
+            } else if (sessionType === 'melodic_intonation' || sessionType === 'speech_rhythm') {
+                defaultBpm = 70;
+            } else if (sessionType === 'cognitive_rhythm') {
+                defaultBpm = 65;
+            }
+            targetBpm = defaultBpm + 5;
+        }
+
+        // Get session-specific parameters
+        if (sessionType === 'upper_limb_motor') {
+            affectedLimb = '{{ patient_profile.stroke_affected_side or "affected" }}';
+        } else if (sessionType === 'cognitive_rhythm') {
+            cognitiveLevel = 2; // Default cognitive level
+        }
+
+        const sessionData = {
+            session_type: sessionType,
+            initial_bpm: defaultBpm,
+            target_bpm: targetBpm,
+            affected_limb: affectedLimb,
+            cognitive_load_level: cognitiveLevel
+        };
+
+        const response = await fetch('/session/start', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(sessionData)
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+
+            if (data.beat_url) {
+                console.log('Custom therapeutic beat generated for session');
+            }
+
+            window.location.href = `/session/${data.session_id}`;
+        } else {
+            alert('Failed to start session. Please try again.');
+        }
+    } catch (error) {
+        console.error('Error starting stroke session:', error);
+        alert('Failed to start session. Please try again.');
+    }
+}
+</script>
+{% endblock %}
