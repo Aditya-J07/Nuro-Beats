@@ -5,7 +5,6 @@
   "functions": {
     "api/index.py": {
       "maxDuration": 30,
-      "runtime": "python3.9"
     }
   }
 }
