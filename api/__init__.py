@@ -15,20 +15,42 @@ jwt = JWTManager()
 def create_app():
     app = Flask(__name__)
     
-    app.config["SECRET_KEY"] = os.environ.get("SESSION_SECRET", "neurobeat-secret-key-dev")
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///neurobeat.db")
+    session_secret = os.environ.get("SESSION_SECRET")
+    if not session_secret:
+        raise ValueError("SESSION_SECRET environment variable is required")
+    
+    app.config["SECRET_KEY"] = session_secret
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///instance/neurobeat.db")
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
         "pool_recycle": 300,
         "pool_pre_ping": True,
     }
     
-    app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY", app.config["SECRET_KEY"])
+    jwt_secret = os.environ.get("JWT_SECRET_KEY")
+    if not jwt_secret:
+        raise ValueError("JWT_SECRET_KEY environment variable is required")
+    
+    app.config["JWT_SECRET_KEY"] = jwt_secret
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
     app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
     
-    frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:5173")
+    repl_slug = os.environ.get("REPL_SLUG", "")
+    repl_owner = os.environ.get("REPL_OWNER", "")
+    
+    allowed_origins = []
+    if repl_slug and repl_owner:
+        allowed_origins.append(f"https://{repl_slug}.{repl_owner}.repl.co")
+        allowed_origins.append(f"https://{repl_slug}-5173.{repl_owner}.repl.co")
+    
+    allowed_origins.extend([
+        "http://localhost:5173",
+        "http://localhost:5000",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:5000"
+    ])
+    
     CORS(app, 
-         resources={r"/api/*": {"origins": frontend_url}},
+         resources={r"/api/*": {"origins": allowed_origins}},
          supports_credentials=True,
          allow_headers=["Content-Type", "Authorization"],
          methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
