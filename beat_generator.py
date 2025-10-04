@@ -2,13 +2,12 @@
 import requests
 import json
 import logging
-import os
 from typing import Dict, Optional
 import random
 
 class BeatGenerator:
     def __init__(self):
-        self.api_token = os.environ.get("HUGGINGFACE_API_TOKEN")
+        self.api_token = "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"
         self.base_url = "https://api-inference.huggingface.co/models"
         
         # Define beat sound patterns for different user preferences

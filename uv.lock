@@ -133,6 +133,19 @@ wheels = [
 ]
 
 [[package]]
+name = "flask-cors"
+version = "6.0.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "flask" },
+    { name = "werkzeug" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/76/37/bcfa6c7d5eec777c4c7cf45ce6b27631cebe5230caf88d85eadd63edd37a/flask_cors-6.0.1.tar.gz", hash = "sha256:d81bcb31f07b0985be7f48406247e9243aced229b7747219160a0559edd678db", size = 13463 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/17/f8/01bf35a3afd734345528f98d0353f2a978a476528ad4d7e78b70c4d149dd/flask_cors-6.0.1-py3-none-any.whl", hash = "sha256:c7b2cbfb1a31aa0d2e5341eea03a6805349f7a61647daee1a15c46bbe981494c", size = 13244 },
+]
+
+[[package]]
 name = "flask-dance"
 version = "7.1.0"
 source = { registry = "https://pypi.org/simple" }
@@ -147,6 +160,20 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/d7/b3/38aff96fbafe850f7f4186dc06e96ebc29625d68d1427ad65c9d41c4ec9e/flask_dance-7.1.0.tar.gz", hash = "sha256:6d0510e284f3d6ff05af918849791b17ef93a008628ec33f3a80578a44b51674", size = 140993 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/75/8c/4125e9f1196e5ab9675d38ff445ae4abd7085aba7551335980ac19196389/flask_dance-7.1.0-py3-none-any.whl", hash = "sha256:81599328a2b3604fd4332b3d41a901cf36980c2067e5e38c44ce3b85c4e1ae9c", size = 62176 },
+]
+
+[[package]]
+name = "flask-jwt-extended"
+version = "4.7.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "flask" },
+    { name = "pyjwt" },
+    { name = "werkzeug" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/51/16/96b101f18cba17ecce3225ab07bc4c8f23e6befd8552dbbed87482e7c7fb/flask_jwt_extended-4.7.1.tar.gz", hash = "sha256:8085d6757505b6f3291a2638c84d207e8f0ad0de662d1f46aa2f77e658a0c976", size = 34411 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/67/34/9a91da47b1565811ab4aa5fb134632c8d1757960bfa7d457f486947c4d75/Flask_JWT_Extended-4.7.1-py2.py3-none-any.whl", hash = "sha256:52f35bf0985354d7fb7b876e2eb0e0b141aaff865a22ff6cc33d9a18aa987978", size = 22588 },
 ]
 
 [[package]]
@@ -384,7 +411,9 @@ source = { virtual = "." }
 dependencies = [
     { name = "email-validator" },
     { name = "flask" },
+    { name = "flask-cors" },
     { name = "flask-dance" },
+    { name = "flask-jwt-extended" },
     { name = "flask-login" },
     { name = "flask-sqlalchemy" },
     { name = "gunicorn" },
@@ -400,7 +429,9 @@ dependencies = [
 requires-dist = [
     { name = "email-validator", specifier = ">=2.2.0" },
     { name = "flask", specifier = ">=3.1.2" },
+    { name = "flask-cors", specifier = ">=5.0.0" },
     { name = "flask-dance", specifier = ">=7.1.0" },
+    { name = "flask-jwt-extended", specifier = ">=4.6.0" },
     { name = "flask-login", specifier = ">=0.6.3" },
     { name = "flask-sqlalchemy", specifier = ">=3.1.1" },
     { name = "gunicorn", specifier = ">=23.0.0" },

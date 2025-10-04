@@ -1,0 +1,666 @@
+/**
+ * Custom CSS for NeuroBeat Application
+ * Enhances the dark theme Bootstrap styling with application-specific styles
+ */
+
+/* Root variables for consistent theming */
+:root {
+    --neuro-primary: #007bff;
+    --neuro-success: #28a745;
+    --neuro-warning: #ffc107;
+    --neuro-danger: #dc3545;
+    --neuro-info: #17a2b8;
+    --neuro-dark: #343a40;
+    --neuro-light: #f8f9fa;
+    --neuro-border-radius: 0.5rem;
+    --neuro-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    --neuro-shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+}
+
+/* Enhanced card styling with glassmorphism */
+.card {
+    border-radius: var(--neuro-border-radius);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    backdrop-filter: blur(15px);
+    position: relative;
+    overflow: hidden;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--neuro-primary), var(--neuro-info), var(--neuro-success));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 123, 255, 0.2);
+    border-color: rgba(0, 123, 255, 0.3);
+}
+
+.card:hover::before {
+    opacity: 1;
+}
+
+.card-header {
+    background: linear-gradient(135deg, rgba(0, 123, 255, 0.1), rgba(0, 123, 255, 0.05));
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 1.5rem 1.5rem;
+    position: relative;
+}
+
+.card-header .card-title {
+    margin-bottom: 0;
+    font-weight: 700;
+    color: var(--bs-light);
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* Beat visualizer enhancements */
+.beat-visualizer {
+    position: relative;
+    margin: 2rem auto;
+}
+
+.beat-indicator {
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(45deg, var(--neuro-primary), var(--neuro-info));
+    box-shadow: 0 0 20px rgba(0, 123, 255, 0.3);
+}
+
+.beat-indicator.active {
+    transform: scale(1.3) !important;
+    box-shadow: 0 0 30px rgba(0, 123, 255, 0.5);
+}
+
+.beat-visualizer-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 3px solid rgba(0, 123, 255, 0.3);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+/* Session controls */
+.session-controls {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    margin: 2rem 0;
+}
+
+.session-btn {
+    min-width: 120px;
+    font-weight: 600;
+    border-radius: var(--neuro-border-radius);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.session-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.session-btn:hover::before {
+    left: 100%;
+}
+
+/* Progress indicators */
+.progress {
+    height: 0.75rem;
+    border-radius: var(--neuro-border-radius);
+    background-color: rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+}
+
+.progress-bar {
+    border-radius: var(--neuro-border-radius);
+    transition: width 0.6s ease, background-color 0.3s ease;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Stats cards */
+.stats-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.stats-card:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08));
+    transform: translateY(-5px);
+}
+
+.stats-card .card-body {
+    padding: 1.5rem;
+}
+
+.stats-card h4 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--bs-light);
+    margin-bottom: 0.5rem;
+}
+
+/* Therapy modules */
+.therapy-module {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.therapy-module:hover {
+    transform: scale(1.02);
+}
+
+.therapy-module.primary {
+    border: 2px solid var(--neuro-primary);
+    background: linear-gradient(135deg, rgba(0, 123, 255, 0.1), rgba(0, 123, 255, 0.05));
+}
+
+.therapy-module.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Table enhancements */
+.table-hover tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: var(--bs-light);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.table td {
+    vertical-align: middle;
+    color: var(--bs-light);
+}
+
+/* Badge styling */
+.badge {
+    font-size: 0.75em;
+    padding: 0.5em 0.75em;
+    border-radius: var(--neuro-border-radius);
+    font-weight: 600;
+}
+
+.badge.bg-primary {
+    background: linear-gradient(45deg, var(--neuro-primary), #0056b3) !important;
+}
+
+.badge.bg-success {
+    background: linear-gradient(45deg, var(--neuro-success), #1e7e34) !important;
+}
+
+.badge.bg-warning {
+    background: linear-gradient(45deg, var(--neuro-warning), #d39e00) !important;
+    color: var(--neuro-dark) !important;
+}
+
+.badge.bg-danger {
+    background: linear-gradient(45deg, var(--neuro-danger), #bd2130) !important;
+}
+
+/* Enhanced form controls */
+.form-control {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: var(--bs-light);
+    border-radius: var(--neuro-border-radius);
+    transition: all 0.3s ease;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    backdrop-filter: blur(10px);
+}
+
+.form-control:focus {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.1));
+    border-color: var(--neuro-primary);
+    box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25), 0 4px 15px rgba(0, 123, 255, 0.2);
+    color: var(--bs-light);
+    transform: translateY(-2px);
+}
+
+.form-label {
+    font-weight: 700;
+    color: var(--bs-light);
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.form-label::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--neuro-primary), var(--neuro-info));
+    transition: width 0.3s ease;
+}
+
+.form-label:hover::after {
+    width: 100%;
+}
+
+/* Enhanced button styling */
+.btn {
+    border-radius: var(--neuro-border-radius);
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid transparent;
+    backdrop-filter: blur(10px);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--neuro-primary), #0056b3);
+    border-color: var(--neuro-primary);
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #0056b3, #004085);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.4);
+}
+
+.btn-outline-primary {
+    border: 2px solid var(--neuro-primary);
+    color: var(--neuro-primary);
+    background: transparent;
+}
+
+.btn-outline-primary:hover {
+    background: linear-gradient(135deg, var(--neuro-primary), #0056b3);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.4);
+}
+
+/* Enhanced Custom dropdown styling for better visibility */
+.dropdown-container {
+    position: relative;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.custom-dropdown {
+    border: 2px solid rgba(0, 123, 255, 0.3);
+    border-radius: var(--neuro-border-radius);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    color: var(--bs-light);
+    max-height: 180px;
+    overflow-y: auto;
+    padding: 0;
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.2);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.custom-dropdown:hover {
+    border-color: rgba(0, 123, 255, 0.5);
+    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.3);
+}
+
+.custom-dropdown .dropdown-option {
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+    font-weight: 500;
+}
+
+.custom-dropdown .dropdown-option:last-child {
+    border-bottom: none;
+    border-radius: 0 0 var(--neuro-border-radius) var(--neuro-border-radius);
+}
+
+.custom-dropdown .dropdown-option:first-child {
+    border-radius: var(--neuro-border-radius) var(--neuro-border-radius) 0 0;
+}
+
+.custom-dropdown .dropdown-option::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s;
+}
+
+.custom-dropdown .dropdown-option:hover::before {
+    left: 100%;
+}
+
+.custom-dropdown .dropdown-option:hover {
+    background: linear-gradient(135deg, var(--neuro-primary), #0056b3);
+    color: white;
+    transform: translateX(4px);
+    box-shadow: inset 4px 0 0 rgba(255, 255, 255, 0.3);
+}
+
+.custom-dropdown .dropdown-option.selected {
+    background: linear-gradient(135deg, var(--neuro-primary), #004085);
+    color: white;
+    font-weight: 600;
+    box-shadow: inset 4px 0 0 #fff;
+    position: relative;
+}
+
+.custom-dropdown .dropdown-option.selected::after {
+    content: '✓';
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: bold;
+    color: white;
+}
+
+/* Scrollbar styling for dropdown */
+.custom-dropdown::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-dropdown::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.custom-dropdown::-webkit-scrollbar-thumb {
+    background: var(--neuro-primary);
+    border-radius: 3px;
+}
+
+.custom-dropdown::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* Modal enhancements */
+.modal-content {
+    background: var(--bs-dark);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--neuro-border-radius);
+}
+
+.modal-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.modal-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Alert enhancements */
+.alert {
+    border-radius: var(--neuro-border-radius);
+    border: none;
+    backdrop-filter: blur(10px);
+}
+
+.alert-success {
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.2), rgba(40, 167, 69, 0.1));
+    color: #d4edda;
+    border-left: 4px solid var(--neuro-success);
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.2), rgba(220, 53, 69, 0.1));
+    color: #f8d7da;
+    border-left: 4px solid var(--neuro-danger);
+}
+
+.alert-warning {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 193, 7, 0.1));
+    color: #fff3cd;
+    border-left: 4px solid var(--neuro-warning);
+}
+
+.alert-info {
+    background: linear-gradient(135deg, rgba(23, 162, 184, 0.2), rgba(23, 162, 184, 0.1));
+    color: #d1ecf1;
+    border-left: 4px solid var(--neuro-info);
+}
+
+/* Navigation enhancements */
+.navbar {
+    backdrop-filter: blur(15px);
+    background: linear-gradient(135deg, rgba(52, 58, 64, 0.95), rgba(52, 58, 64, 0.8)) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+}
+
+.navbar-brand {
+    font-weight: 800;
+    font-size: 1.75rem;
+    display: flex;
+    align-items: center;
+    background: linear-gradient(135deg, var(--neuro-primary), var(--neuro-info));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.navbar-nav .nav-link {
+    font-weight: 600;
+    transition: all 0.3s ease;
+    position: relative;
+    padding: 0.75rem 1rem !important;
+}
+
+.navbar-nav .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--neuro-primary), var(--neuro-info));
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+.navbar-nav .nav-link:hover {
+    color: var(--neuro-primary) !important;
+    transform: translateY(-2px);
+}
+
+.navbar-nav .nav-link:hover::after {
+    width: 80%;
+}
+
+/* Hero section styling */
+.display-4 {
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--bs-light), var(--neuro-primary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.lead {
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 1.5rem;
+}
+
+/* Footer styling */
+footer {
+    margin-top: auto;
+    background: linear-gradient(135deg, rgba(52, 58, 64, 0.95), rgba(52, 58, 64, 0.8)) !important;
+    backdrop-filter: blur(10px);
+}
+
+/* Session timer display */
+.session-timer {
+    font-family: 'Courier New', monospace;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--neuro-primary);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Loading states */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .session-controls {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .session-btn {
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    .beat-visualizer {
+        width: 150px !important;
+        height: 150px !important;
+    }
+    
+    .stats-card h4 {
+        font-size: 1.5rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    .display-4 {
+        font-size: 2rem;
+    }
+    
+    .beat-visualizer {
+        width: 120px !important;
+        height: 120px !important;
+    }
+}
+
+/* Accessibility enhancements */
+.btn:focus {
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.5);
+}
+
+.form-control:focus,
+.form-select:focus {
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .card {
+        border: 2px solid rgba(255, 255, 255, 0.5);
+    }
+    
+    .btn {
+        border-width: 2px;
+    }
+    
+    .form-control,
+    .form-select {
+        border: 2px solid rgba(255, 255, 255, 0.5);
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .beat-indicator {
+        transition: none;
+    }
+}
+
+/* Print styles */
+@media print {
+    .navbar,
+    .btn,
+    .session-controls,
+    .beat-visualizer {
+        display: none !important;
+    }
+    
+    .card {
+        border: 1px solid #000;
+        box-shadow: none;
+    }
+    
+    .table {
+        border-collapse: collapse;
+    }
+    
+    .table th,
+    .table td {
+        border: 1px solid #000;
+    }
+}

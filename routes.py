@@ -206,7 +206,7 @@ def start_session():
             }
 
             # Generate therapeutic beat
-            beat_url = beat_generator.generate_stroke_therapy_beat(session_type, int(initial_bpm), patient_condition)
+            beat_url = beat_generator.generate_stroke_therapy_beat(session_type, initial_bpm, patient_condition)
 
             # Get optimal BPM suggestion
             optimal_bpm = beat_generator.get_optimal_bpm_for_stroke_therapy(session_type, patient_condition)

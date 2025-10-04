@@ -64,3 +64,39 @@ Preferred communication style: Simple, everyday language.
 - **SQLite**: Default local database for development and testing
 - **PostgreSQL**: Production database support via DATABASE_URL environment variable
 - **Connection Pooling**: Configured with automatic reconnection and health checks
+
+## Recent Changes
+
+### October 4, 2025 - Replit Environment Setup
+- **Project Import**: Successfully imported NeuroBeat from GitHub repository
+- **Dependency Management**: Configured uv package manager with pyproject.toml
+  - Installed all Python dependencies including Flask, SQLAlchemy, Gunicorn
+  - Virtual environment created at `.pythonlibs/`
+- **Workflow Configuration**: 
+  - Created "NeuroBeat Server" workflow running on port 5000
+  - Development server: `uv run python main.py`
+  - Production server (deployment): Gunicorn with 4 workers
+- **Deployment Configuration**: 
+  - Type: Autoscale (stateless web application)
+  - Command: `gunicorn --bind=0.0.0.0:5000 --reuse-port --workers=4 main:app`
+- **Git Configuration**: Added `.gitignore` for Python, virtual environments, and database files
+- **Application Status**: Running successfully with database tables created
+
+## Development Setup
+
+### Running Locally
+The application runs on Flask's development server at `0.0.0.0:5000` with auto-reload enabled.
+
+### Key Files
+- **main.py**: Application entry point
+- **app.py**: Flask app initialization and database setup
+- **routes.py**: All application routes and business logic
+- **models.py**: SQLAlchemy database models
+- **beat_generator.py**: AI beat generation logic using Hugging Face API
+- **templates/**: Jinja2 HTML templates
+- **static/**: CSS and JavaScript assets
+
+### Database
+- Development database is SQLite stored at `instance/neurobeat.db`
+- Database tables are automatically created on app startup
+- For production, set DATABASE_URL environment variable to PostgreSQL connection string

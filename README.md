@@ -1,23 +1,3 @@
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/ac2db300-4578-45c1-bb47-6396116e7adb" />
-</p>
-
----
-
-# Hackademia 2025 – String Coders
-Welcome to the official repository for Hackademia 2025 – String Coders, part of the national-level hackathon hosted by National College Jayanagar.
-
-We’re committed to the hackathon values of innovation, integrity, and collaboration — no early commits before the official start, regular and transparent progress updates, and adherence to all rules and guidelines.
-
----
-
-# Team Information
-- Team Name: String Coders
-- Team Captain (GitHub): @aditya-j07
-- Repository Name: 15-String-Coders
-
----
-
 # 🎶 NeuroBeat – AI-Powered Music Therapy for Neurological Rehabilitation  
 
 Hackademia is a hackathon project that explores the use of **AI-generated rhythmic beats** for **music-assisted therapy** in patients with **Parkinson’s disease and post-stroke motor impairments**.  

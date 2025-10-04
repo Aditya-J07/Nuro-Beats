@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome to NeuroBeat{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <!-- Hero Section -->
+        <div class="text-center mb-5">
+            <h1 class="display-4 mb-4">
+                <i data-feather="activity" class="me-3"></i>
+                NeuroBeat
+            </h1>
+            <p class="lead">AI-Powered Music Therapy for Parkinson's & Stroke Recovery</p>
+            <p class="text-muted">Clinical-grade neurorehabilitation through personalized rhythmic beats and real-time adaptation</p>
+        </div>
+
+        <!-- Login/Register Cards -->
+        <div class="row g-4">
+            <!-- Login Card -->
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i data-feather="log-in" class="me-2"></i>
+                            Sign In
+                        </h5>
+                        <p class="card-text text-muted">Access your therapy sessions and progress tracking</p>
+
+                        <form method="POST" action="{{ url_for('login') }}">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="username" name="username" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i data-feather="log-in" class="me-2"></i>
+                                Sign In
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Register Card -->
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i data-feather="user-plus" class="me-2"></i>
+                            Clinician Registration
+                        </h5>
+                        <p class="card-text text-muted">Register as a healthcare provider to manage patients</p>
+
+                        <button type="button" class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#registerModal">
+                            <i data-feather="user-plus" class="me-2"></i>
+                            Register as Clinician
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <h3 class="text-center mb-4">Key Features</h3>
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i data-feather="target" class="mb-3" style="width: 48px; height: 48px;"></i>
+                            <h5>Personalized Therapy</h5>
+                            <p class="text-muted">AI-generated beats tailored to your baseline and progress</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i data-feather="trending-up" class="mb-3" style="width: 48px; height: 48px;"></i>
+                            <h5>Real-time Adaptation</h5>
+                            <p class="text-muted">Automatic BPM adjustment based on your performance</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i data-feather="bar-chart-2" class="mb-3" style="width: 48px; height: 48px;"></i>
+                            <h5>Progress Tracking</h5>
+                            <p class="text-muted">Detailed analytics and clinician dashboard monitoring</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Registration Modal -->
+<div class="modal fade" id="registerModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i data-feather="user-plus" class="me-2"></i>
+                    Create Clinician Account
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('register') }}">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="reg_first_name" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="reg_first_name" name="first_name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="reg_last_name" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="reg_last_name" name="last_name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="reg_username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="reg_username" name="username" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="reg_email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="reg_email" name="email" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="reg_password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="reg_password" name="password" required>
+                        </div>
+                        
+                    </div>
+
+                    <!-- Clinician-only registration -->
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="license_number" class="form-label">License Number</label>
+                            <input type="text" class="form-control" id="license_number" name="license_number">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="specialization" class="form-label">Specialization</label>
+                            <input type="text" class="form-control" id="specialization" name="specialization" placeholder="e.g., Physical Therapy, Neurology">
+                        </div>
+                    </div>
+                    <input type="hidden" name="user_type" value="clinician">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i data-feather="user-plus" class="me-2"></i>
+                        Create Account
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Set up event listeners when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize feather icons
+    if (typeof feather !== 'undefined') {
+        feather.replace();
+    }
+
+    // Ensure form submission works
+    const registerForm = document.querySelector('#registerModal form');
+    if (registerForm) {
+        registerForm.addEventListener('submit', function(e) {
+            console.log('Form submitting...');
+            console.log('Form validation passed, submitting...');
+        });
+    }
+});
+</script>
+{% endblock %}
