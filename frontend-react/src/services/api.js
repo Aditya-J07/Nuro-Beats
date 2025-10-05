@@ -12,7 +12,7 @@ const getApiUrl = () => {
   return 'http://localhost:5000/api';
 };
 
-const API_BASE_URL = 'https://neura-beats.onrender.com/';
+const API_BASE_URL = 'https://nuro-beats.onrender.com';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
