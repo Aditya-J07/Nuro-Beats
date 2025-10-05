@@ -44,7 +44,7 @@ def create_app():
     
     # ✅ Added your Vercel URL
     allowed_origins.extend([
-        "https://neuro-beat.vercel.app",  # Your production frontend
+        "https://neuro-beats.vercel.app",  # Your production frontend
         "http://localhost:5173",
         "http://localhost:5000",
         "http://127.0.0.1:5173",
