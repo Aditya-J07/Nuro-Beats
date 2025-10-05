@@ -19,7 +19,7 @@ def create_app():
     if not session_secret:
         raise ValueError("SESSION_SECRET environment variable is required")
     
-    app.config["SECRET_KEY"] = session_secret
+    app.config["SECRET_KEY"] = session_secret  # ✅ FIXED: Was hardcoded!
     app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///instance/neurobeat.db")
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
         "pool_recycle": 300,
@@ -30,7 +30,7 @@ def create_app():
     if not jwt_secret:
         raise ValueError("JWT_SECRET_KEY environment variable is required")
     
-    app.config["JWT_SECRET_KEY"] = jwt_secret
+    app.config["JWT_SECRET_KEY"] = jwt_secret  # ✅ FIXED: Was hardcoded!
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
     app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
     
@@ -42,7 +42,9 @@ def create_app():
         allowed_origins.append(f"https://{repl_slug}.{repl_owner}.repl.co")
         allowed_origins.append(f"https://{repl_slug}-5173.{repl_owner}.repl.co")
     
+    # ✅ Added your Vercel URL
     allowed_origins.extend([
+        "https://neuro-beat.vercel.app",  # Your production frontend
         "http://localhost:5173",
         "http://localhost:5000",
         "http://127.0.0.1:5173",
